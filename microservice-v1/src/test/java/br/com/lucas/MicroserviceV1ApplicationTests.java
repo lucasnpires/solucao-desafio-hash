@@ -1,0 +1,13 @@
+package br.com.lucas;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class MicroserviceV1ApplicationTests {
+
+	@Test
+	void contextLoads() {
+	}
+
+}

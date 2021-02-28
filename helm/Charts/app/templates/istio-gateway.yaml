@@ -1,0 +1,20 @@
+{{- if .Values.istio.enabled}}
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: "microservices-gateway"
+  namespace: istio-system
+  labels:  
+    {{- include "common.helm" . | nindent 4 }}  
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      name: microservices
+      number: {{.Values.istio.gateway.port}}      
+      protocol: {{ .Values.istio.gateway.protocol | default "TCP" }}
+      targetPort: {{.Values.istio.gateway.targetPort}}
+    hosts:
+    - "{{ .Values.istio.gateway.hosts }}"
+{{- end }}

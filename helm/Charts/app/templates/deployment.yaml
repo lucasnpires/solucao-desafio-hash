@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  {{- with .Values.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  labels:  
+    {{- include "common.helm" . | nindent 4 }}  
+    {{- include "microservice.label" . | nindent 4 }}    
+  namespace: {{ include "microservice.namespace" . }}
+  name: {{ include "common.name.value" . }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      {{- include "microservice.label" . | nindent 6 }}      
+  template:
+    metadata:
+      labels:        
+        {{- include "microservice.label" . | nindent 8 }}      
+    spec:
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      affinity:
+      {{- if not .Values.affinity }}
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    {{- include "microservice.label" . | nindent 20 }}
+                topologyKey: topology.kubernetes.io/zone
+              weight: 100    
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    {{- include "microservice.label" . | nindent 20 }}
+                topologyKey: kubernetes.io/hostname
+              weight: 90
+      {{- else }}
+        {{- toYaml .Values.affinity | nindent 8 }}  
+      {{- end }}
+      imagePullSecrets:
+        - name: {{ .Values.imagePullSecret }}
+      containers:
+        - name: microservice
+          image: {{ .Values.image }}:{{ .Values.version }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if and .Values.startupProbe (semverCompare ">=1.18" .Capabilities.KubeVersion.Version) }}
+          startupProbe:
+            {{- toYaml .Values.startupProbe | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}                      
+          env:
+            - name: NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name

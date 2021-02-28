@@ -1,0 +1,71 @@
+# Number of replicas to Odin
+replicas: 3
+# Name of image pull
+imagePullSecret: desenvolvimento
+image: desenvolvimento.azurecr.io/devops/microservice
+version: 1.0.0
+
+istio:
+  enabled: false
+  v1Weight: 70
+  v2Weight: 30
+  gateway:
+    port: 80
+    targetPort: 8080
+    protocol: HTTP
+    hosts: "*"    
+  
+labels: {}
+annotations: {}  
+resources: {}
+
+# Define a different affinity used on Odin
+affinity: {}
+nodeSelector: {}
+
+namespace:
+  create: false
+
+readinessProbe: 
+  httpGet:
+    path: /actuator/health
+    port: 8080
+    scheme: HTTP
+  initialDelaySeconds: 20
+
+startupProbe: 
+  httpGet:
+    path: /actuator/health
+    port: 8080
+    scheme: HTTP
+  initialDelaySeconds: 20
+  failureThreshold: 2
+  periodSeconds: 2      
+
+livenessProbe: 
+  httpGet:
+    path: /actuator/health
+    port: 8080
+    scheme: HTTP
+  initialDelaySeconds: 20
+
+service:
+  type: ClusterIP
+  loadBalancerIP: 
+  port: 8080
+  
+  labels: {} 
+  annotations: {}
+
+autoScale:
+  enabled: false 
+  minReplicas: 6
+  maxReplicas: 30
+
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 60

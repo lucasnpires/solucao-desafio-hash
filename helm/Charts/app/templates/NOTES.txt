@@ -1,0 +1,12 @@
+Microservice Helm Chart
+- Release Name: {{ .Release.Name }}
+- Version: {{ .Chart.Version }}
+
+Microservice
+- Namespace: {{ include "microservice.namespace" . }}
+- Image: {{ .Values.image }}
+- Version: {{ .Values.version }}
+- Replicas: {{ .Values.replicas }}
+{{- if .Values.autoScale.enabled }}
+- AutoScale: {{ .Values.autoScale.minReplicas }} - {{ .Values.autoScale.maxReplicas }}
+{{- end }}

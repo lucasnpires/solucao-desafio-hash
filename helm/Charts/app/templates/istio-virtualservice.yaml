@@ -1,0 +1,33 @@
+{{- if .Values.istio.enabled}}
+{{- $servicePort := .Values.service.port -}}
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: microservices-virtual-services
+  namespace: istio-system
+  labels:  
+    {{- include "common.helm" . | nindent 4 }}  
+spec:
+  hosts:
+  - "{{ .Values.istio.gateway.hosts }}"
+  gateways:
+  -  "microservices-gateway"
+  http:
+  - name: microservices-routes
+    match:
+    - uri:
+        prefix: "/cart"
+    - uri:
+        prefix: "/checkout"   
+    route:
+    - destination:
+        host: microservice-v1.v1.svc.cluster.local 
+        port:
+          number: {{ $servicePort }}
+      weight: {{ .Values.istio.v1Weight }}        
+    - destination:
+        host: microservice-v2.v2.svc.cluster.local 
+        port:
+          number: {{ $servicePort }}              
+      weight: {{ .Values.istio.v2Weight }}          
+{{- end }}
