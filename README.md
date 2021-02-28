@@ -1,6 +1,10 @@
-# Hash Teste SRE
+# Hash Teste SRE - Solução
 
-## Desenho da Solução de Arquitetura
+<br/>
+
+# Arquitetura
+
+## 1. Desenho de Arquitetura
 
 <br/>
 
@@ -24,11 +28,11 @@
 Aplicaremos a estratégia de rollout para todo namespace v2 do microserviço gradativamente via istio, utilizando o weight (peso) existente no virtual service. Até que os usuários estejam todos redirecionados nos paths /cart e /checkout para o microserviço v2, faremos um acompanhamento para verificar se os usuários não estão sendo impactados, se isso ocorrer, é só voltar o peso todo para a versão v1 que ja existe hoje em produção.
 
 ## Pré-requisitos
-- Cluster GKE provisionado
-- Cluster limpo de qualquer instalação do istio, independente da versão.
-- Estar logado como administrador no cluster do Kubernetes.
-- Client (istioctl) e pacote de instação do istio na versão 1.8.1.
-- kubectl em uma versão atualizada.
+- Cluster GKE provisionado;
+- Cluster limpo de qualquer instalação do istio, independente da versão;
+- Estar logado como administrador no cluster do Kubernetes;
+- Client (istioctl) e pacote de instação do istio na versão 1.8.1;
+- kubectl em uma versão atualizada;
 
 ## Etapas para provisionamento das aplicações de teste
 <br/>
@@ -42,7 +46,7 @@ kubectl label namespace v1 istio-injection=enabled && kubectl label namespace v2
 
 <br/>
 
-### Instalando as dependências de Chart
+### Instalando as dependências de Chart localmente
 ```bash
 helm dependency update ./helm/Charts/app/
 ```
@@ -55,7 +59,28 @@ helm upgrade --install microservice-v1 ./helm/Charts/app/ --wait --set image=luc
 
 <br/>
 
-### Instalando a aplicação v2 (aplicação que será utilizada posteriormente ao rollout) via helm
+### Testando a aplicação instalada
 ```bash
-helm upgrade --install microservice-v2 ./helm/Charts/app/ --wait --set image=lucasnp1990/microservice-hash --set version=v2-0.0.1 --namespace v2 --create-namespace --wait --debug
+# passando o path que quero testar por parâmetro para o script (Ex. cart ou checkout)
+./test.sh cart
 ```
+
+<br/>
+
+### Instalando a aplicação v2 (aplicação que será utilizada posteriormente ao rollout) via helm e liberando 10% do trafego
+```bash
+helm upgrade --install microservice-v2 ./helm/Charts/app/ --wait --set image=lucasnp1990/microservice-hash --set version=v2-0.0.1 --set istio.v1Weight=90 --set istio.v2Weight=10 --namespace v2 --create-namespace --wait --debug
+```
+
+## 2. Multi-Tenancy
+
+A multilocação no Kubernetes significa que um cluster e seu plano de controle são compartilhados por vários usuários, cargas de trabalho ou aplicativos. É o oposto da locação única, em que apenas um usuário usa um cluster Kubernetes inteiro. Existem diferentes tipos de multilocação, multilocação flexível, e multilocação rígida são algumas delas.
+
+## Algumas boas práticas de Multi-Tenancy em um cluster Kubernetes
+
+1. Configurar o acesso do namespace de cada aplicação somente para aqueles pods que realmente necessitam de acesso;
+2. Criar RBAC para Admin, Administrador de Namespace e Desenvolvedor para cada uma das namespaces;
+3. Configurar PodSecurityPolicy para não ser possível executar no pod comandos com privilégio sudo;
+
+
+# Desenvolvimento

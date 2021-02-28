@@ -6,9 +6,9 @@ image: desenvolvimento.azurecr.io/devops/microservice
 version: 1.0.0
 
 istio:
-  enabled: false
-  v1Weight: 70
-  v2Weight: 30
+  enabled: true
+  v1Weight: 100
+  v2Weight: 0
   gateway:
     port: 80
     targetPort: 8080
