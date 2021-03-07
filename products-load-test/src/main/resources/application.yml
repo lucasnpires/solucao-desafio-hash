@@ -1,0 +1,13 @@
+server:
+  port: 9090
+
+products_api:
+  host: localhost
+  port: 8080
+
+spring:
+  data:
+    mongodb:
+     host: localhost
+     port: 27017
+     database: products-load-test

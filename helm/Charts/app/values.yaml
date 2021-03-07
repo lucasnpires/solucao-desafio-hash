@@ -1,8 +1,8 @@
 # Number of replicas to Odin
 replicas: 3
 # Name of image pull
-imagePullSecret: desenvolvimento
-image: desenvolvimento.azurecr.io/devops/microservice
+imagePullSecret: myacr
+image: myacr.azurecr.io/devops/microservice
 version: 1.0.0
 
 istio:

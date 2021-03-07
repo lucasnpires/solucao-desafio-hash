@@ -1,0 +1,23 @@
+version: '3'
+services:
+  mongodb:
+    image: mongo:3.6.1
+    container_name: mongodb
+    volumes: 
+      - ~/mongo/data:/data/db
+    ports:
+        - 27017:27017
+    command: mongod
+  
+  products-load-test:
+    #build: ./products-load-test
+    image: lucasnp1990/load-teste-hash:latest
+    container_name: products-load-test
+    environment:
+     - SPRING_DATA_MONGODB_HOST=mongodb
+    ports:
+        - 9090:9090
+    depends_on:
+      - "mongodb"
+    links:
+      - mongodb

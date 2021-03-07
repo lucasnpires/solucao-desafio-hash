@@ -78,9 +78,85 @@ A multilocação no Kubernetes significa que um cluster e seu plano de controle 
 
 ## Algumas boas práticas de Multi-Tenancy em um cluster Kubernetes
 
-1. Configurar o acesso do namespace de cada aplicação somente para aqueles pods que realmente necessitam de acesso;
+1. Configurar o acesso do namespace v1 somente para os pods dele mesmo, isso se aplica ao v2 também;
 2. Criar RBAC para Admin, Administrador de Namespace e Desenvolvedor para cada uma das namespaces;
 3. Configurar PodSecurityPolicy para não ser possível executar no pod comandos com privilégio sudo;
 
 
 # Desenvolvimento
+
+## Pré-requisitos
+- docker
+- docker-compose
+
+<br/>
+
+### Estratégia utilizada no teste de carga
+Foi desenvolvida uma API (código fonte disponível neste repositório) responsável por testar a carga no serviço de products.
+
+<br/>
+
+### Tecnologias Utilizadas na construção da API:
+ - Java
+ - Spring Boot
+ - Lombok
+ - Rest Template
+ - Maven
+ - Spring Actuator
+ - MongoDB
+
+<br/>
+<br/>
+
+Recursos disponíveis:
+
+<br/>
+
+``` yaml
+path: /init/test
+description: Responsável por iniciar o teste de carga
+method: POST
+params: qtdExecucoes
+example: curl -ivX POST http://localhost:9090/init/test?qtdExecucoes=10
+```
+
+``` yaml
+path: /execution
+description: Responsável por trazer as informações de uma execução de teste de carga
+method: GET
+params: id
+example: curl -ivX GET http://localhost:9090/execution?id=6044173c6696d24dfa3e7f6c
+```
+
+``` yaml
+path: /stats
+method: GET
+description: Responsável por trazer as informações de uma execução de teste de carga
+params: idExecution
+example: curl -ivX POST http://localhost:9090/stats?idExecution=6044173c6696d24dfa3e7f6c
+```
+
+<br/>
+
+### Sobre o CLI
+O CLI em Shell Script foi construído de forma a chamar essa API e orchestrar as outras chamadas até que as estatísticas de carga estejam disponíveis
+
+<br/>
+<br/>
+
+## Passo a passo para a demonstração
+<br/>
+
+Executar o docker-compose através do comando abaixo para subir todas as aplicações necessárias para o teste de carga (inclusive a que será testada):
+
+``` bash
+# na raiz do repositório
+docker-compose up -d
+```
+
+Para iniciar o CLI responsável pelo teste de carga, favor executar o comando abaixo:
+
+``` bash
+# onde 100 é a quantidade de vezes que o teste de carga vai chamar a api de products
+./load-test 100
+```

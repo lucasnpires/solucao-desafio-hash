@@ -1,0 +1,72 @@
+#!/bin/bash
+
+qtdExecucoesParam=$1
+
+initTeste(){
+    idExecution=$(curl -s -XPOST http://localhost:9090/test/init?qtdExecucoes=$qtdExecucoesParam | jq '.id' | sed 's/"//g')
+    echo $idExecution
+}
+
+getStatus(){
+    status=$(curl -s -XGET http://localhost:9090/execution?id=$idExecution | jq '.status' | sed 's/"//g') 
+    echo $status
+}
+
+getStats(){
+    statsResponseJson=$(curl -s -XGET http://localhost:9090/stats?idExecution=$idExecution)
+    echo $statsResponseJson
+}
+
+validateParam(){
+    if [ $qtdExecucoesParam == '' ]
+    then
+        echo "Parâmetro qtdExecucoes obrigatório..."
+        echo "Para executar corretamente utilize:"
+        echo "Ex.: ./load-test 2 - onde 2 é a quantidade de vezes que o teste de carga vai chamar a api de product"
+        exit 0
+    fi
+}
+
+######## START #########################
+validateParam
+
+echo "Iniciando execução do teste de carga. "
+echo "QtdExecucoes: $qtdExecucoesParam "
+echo ""
+idExecution=$(initTeste)
+status=$(getStatus)
+
+while true; 
+do 
+	sleep 1s
+
+    if [ $status == 'INICIADO' ]
+    then
+        echo "teste ainda em execução"
+        echo "obtendo status execução novamente..."
+        status=$(getStatus)
+    elif [ $status == 'FINALIZADO' ]
+    then
+        echo "obtendo estatisticas..."
+        echo ""        
+        statsResponseJson=$(getStats)
+        echo "###############################"
+        echo "#### ESTATISTICAS EXECUÇÃO ####"
+        echo "###############################"
+        qtdTotalReq=$(echo $statsResponseJson | jq '.qtdTotalReq')
+        qtdSucesso=$(echo $statsResponseJson | jq '.qtdSucesso')
+        qtdErros=$(echo $statsResponseJson | jq '.qtdErros')
+        mediaLatenciaTotalReq=$(echo $statsResponseJson | jq '.mediaLatenciaTotalReq')
+
+        echo "QTD REQUISIÇÕES: $qtdTotalReq"
+        echo "QTD REQUISIÇÕES COM SUCESSO: $qtdSucesso"
+        echo "QTD REQUISIÇÕES COM ERRO: $qtdErros"
+        echo "MÉDIA LATÊNCIA: $mediaLatenciaTotalReq"
+        echo "###############################"        
+        echo "Teste de carga finalizado com sucesso. Até breve!"
+        exit 0
+    fi
+
+done
+
+

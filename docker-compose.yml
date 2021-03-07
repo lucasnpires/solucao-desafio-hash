@@ -1,0 +1,67 @@
+version: "2"
+
+volumes:
+  node_modules:
+services:
+  mysql:
+    build: ./database
+  discounts-api:
+    build: ./discounts
+    environment:
+      APP_NAME: "discounts-api"
+      APP_ENV: "development"
+      LOG_LEVEL: "INFO"
+      DB_HOST: "database"
+      DB_DATABASE: "api"
+      DB_USERNAME: "root"
+      DB_PASSWORD: "secret"
+      GRPC_PORT: "5001"
+    ports:
+      - "5001:5001"
+    links:
+      - mysql:database    
+  products-api:
+    build: ./products
+    environment:
+      APP_NAME: "products-api"
+      APP_ENV: "development"
+      LOG_LEVEL: "INFO"
+      DB_HOST: "database"
+      DB_DATABASE: "api"
+      DB_USERNAME: "root"
+      DB_PASSWORD: "secret"
+      GRPC_PORT: "5002"
+      HTTP_PORT: "80"
+      DISCOUNTS_PORT: "5001"
+      DISCOUNTS_ADDRESS: "discounts"
+    ports:
+      - "8080:80"
+      - "5002:5002"
+    links:
+      - mysql:database
+      - discounts-api:discounts
+  
+  mongodb:
+    image: mongo:3.6.1
+    container_name: mongodb
+    volumes: 
+      - ~/mongo/data:/data/db
+    ports:
+      - "27017:27017"
+    command: mongod
+  
+  products-load-test:
+    image: lucasnp1990/load-teste-hash:latest
+    container_name: products-load-test
+    environment:
+     SPRING_DATA_MONGODB_HOST: "mongodb"
+     PRODUCTS_API_HOST: "products"
+     PRODUCTS_API_PORT: "80"
+    ports:
+      - "9090:9090"
+    depends_on:
+      - "mongodb"
+      - "products-api"
+    links:
+      - mongodb
+      - products-api:products
