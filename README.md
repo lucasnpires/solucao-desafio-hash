@@ -131,7 +131,7 @@ example: curl -ivX GET http://localhost:9090/execution?id=6044173c6696d24dfa3e7f
 ``` yaml
 path: /stats
 method: GET
-description: Responsável por trazer as informações de uma execução de teste de carga
+description: Responsável por trazer as estatísticas geradas durante os testes
 params: idExecution
 example: curl -ivX POST http://localhost:9090/stats?idExecution=6044173c6696d24dfa3e7f6c
 ```
