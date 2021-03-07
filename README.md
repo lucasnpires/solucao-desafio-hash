@@ -144,7 +144,7 @@ O CLI em Shell Script foi construído de forma a chamar essa API e orchestrar as
 <br/>
 <br/>
 
-## Passo a passo para a demonstração
+## Passo a passo para execução do teste de carga
 <br/>
 
 Executar o docker-compose através do comando abaixo para subir todas as aplicações necessárias para o teste de carga (inclusive a que será testada):
